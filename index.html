@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>MSK useR group</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Travis Gerke, ScD" />
+    <script src="index_files/header-attrs-2.10.1/header-attrs.js"></script>
+    <link href="index_files/xaringanExtra-extra-styles-0.2.6/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+class: title-slide-custom
+
+## ggconsort &lt;br&gt; ggswimlane
+
+### Travis Gerke, ScD &lt;br&gt; .purple[Director of Data Science] &lt;br&gt; .offwhite[PCCTC]
+
+&lt;!--
+Photo by &lt;a href="https://unsplash.com/@timmossholder?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText"&gt;Tim Mossholder&lt;/a&gt; on &lt;a href="https://unsplash.com/s/photos/selection?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText"&gt;Unsplash&lt;/a&gt;
+--&gt;
+
+???
+
+Thanks to the amazing organizers of R/Medicine! I'm so happy to be back this year, all of the sessions so far have been incredible. I apologize that I did not prerecord this talk, which I'm giving live right now, so I won't be able to have fun interactions with you in the chat like some other speakers have done. I did leave a few minutes at the end, so I'm happy to field a couple of comments or questions at that time. I'm Travis Gerke, Director of Data Science at the Prostate Cancer Clinical Trials Consortium, where we manage about a quarter of all active early phase prostate cancer therapeutic trials in the US, with an increasing portfolio of international and late-phase studies as well. Our data science team is hiring, so feel free to reach out if you're looking. I'm here today to talk about CONSORT diagrams.
+
+---
+### Flashback: R/Medicine 2020
+
+![](images/higgins-consort.png)
+
+???
+
+If you attended last year, you may remember Peter Higgins' excellent talk of the same ggconsort name. To avoid reinventing the wheel, I'm going to borrow two of his intro slides, and then provide some context for why I'm back to talk about this topic.
+
+---
+### What are CONSORT diagrams?
+.h2-subtitle[★ Courtesy of Peter Higgins, R/Medicine 2020]
+
+&lt;br&gt;
+
+* A CONSORT diagram shows the flow of participants from screening to analysis, showing counts and reasons for exclusion along the way
+
+* Expected by most medical journals for reporting clinical trials (and, increasingly, observational studies)
+
+&lt;!-- image source https://www.nejm.org/doi/full/10.1056/nejmoa071255 --&gt;
+
+.h-center.w-35[
+![](images/nejm-consort.jpeg)
+]
+
+???
+
+If you aren't familiar, CONSORT diagrams are figures which show the flow of participants through a trial. Here you see an example of a CONSORT diagram from NEJM, where you can see the number of participants (in this case infants) who were assessed for eligibility, the number who were ineligible for various reasons, and the number randomized and followed up. These diagrams are expected by most medical journals, certainly for clinical trials, and often these days for observational studies as well.
+
+---
+### CONSORT diagrams are artisanal products
+.h2-subtitle[★ Courtesy of Peter Higgins, R/Medicine 2020]
+
+&lt;br&gt;
+* Most CONSORTs are built from [templates](http://www.consort-statement.org/consort-statement/flow-diagram) in Word/Powerpoint/Illustrator
+
+.h-center.w-50[
+![](images/consort.gif)
+]
+
+???
+
+To date, CONSORTs are typically hand-crafted into templates provided at the CONSORT group's website which is linked here. Peter last year used the apt word "artisinal" to describe this process. These templates work well enough, but copying and pasting from your analysis into word docs as you can see me doing in this slide can be error prone, and is a common gotcha for manuscript or study reviewers when numbers don't match up.
+
+---
+### Prior work
+
+* R implementations _not_ native to .green[ggplot2]
+
+  * .green[DiagrammeR/Graphviz]: [Wong 2018](https://dannyjnwong.github.io/STROBE-CONSORT-Diagrams-in-R/), [Higgins/Gerber 2020](https://github.com/higgi13425/ggconsort/pull/1), [Köhler 2017](https://scriptsandstatistics.wordpress.com/author/koehlern/)
+  * .green[tikz]: [Gerke lab 2018](https://github.com/GerkeLab/consoRt)
+  * .green[JS]: [Gerke 2021](https://github.com/tgerke/flowcharter)
+
+* Challenges: non-.green[ggplot] syntax; sometimes _too much_ automation
+
+.h-center.w-40[
+![](images/diagrammer-consort.png)
+]
+
+???
+
+Some R implementations of CONSORT diagram construction do exist. Thus far, these are not ggplot-based. Some of you may be familiar with the excellent DiagrammeR package which, when carefully used, can achieve this goal: Danny Wong, Norbert Kohler, and Ben Gerber's pull request to Peter Higgin's ggconsort repository do use it. The challenge with DiagrammeR is that its output is actually too elegant for blocky CONSORTs. You can see an unanswered SO question below, showing DiagrammeRs aesthetically nicer rendering of a CONSORT using one of the approaches above; unfortunately the curved lines don't conform to CONSORT rules. In other attempts, my group implemented a latex/tikz version a few years back, and earlier this year I embedded the flowchart.js library into an R package called flowcharter, which was also didn't permit enough customization.
+
+---
+### A fresh look / the goodness of the R community
+
+???
+
+So here we were, still lacking an end-to-end ggplot compatible CONSORT implementation. Having tinkered with this idea for years now, I had some building blocks in place, and what I was developing unfortunately did not extend Peter's package from last year. I didn't want to risk a ggconsort2 naming situation, so it was time for an email. (read email)
+
+--
+
+.css-typing[
+Hi Peter,
+
+I'd like to take a pretty different approach to {ggconsort}.
+
+Are you willing to transfer the name? 
+
+Travis
+]
+
+???
+
+Peter, being the archetype of the generous and awesome R community responded.
+
+---
+### A fresh look / the goodness of the R community
+
+Hi Peter,
+
+I'd like to take a pretty different approach to {ggconsort}.
+
+Are you willing to transfer the name? 
+
+Travis
+
+&lt;br&gt;
+&lt;hr&gt;
+&lt;br&gt;
+
+.css-typing-2[
+Hi Travis,
+
+Feel free to use the name, hex sticker, and anything else useful.
+
+https://github.com/higgi13425/ggconsort/
+
+Peter
+]
+
+---
+class: middle
+
+.h-center.w-50[
+![](images/ggconsort-hex.svg)
+]
+
+???
+
+And thus, ggconsort was born again.
+
+---
+class: inverse, middle, center
+
+&lt;span style="font-size:2em"&gt;
+CONSORT construction can be segmented into **.lightgreen[two]** stages
+&lt;/span&gt;
+
+&lt;br&gt;
+
+???
+
+The new ggconsort framework posits that CONSORT construction happens in two distinct stages, and provides convenience functions and R objects for each.
+
+--
+
+**.lightgreen[1.]** Counting and annotation at the time of data wrangling
+
+???
+
+First, at the time of data wrangling, we would like to capture counts of cohorts or subcohorts (for example, consented patients who are randomized) into a data object. This will streamline efficiency and enhance reproducibility when the source data changes, for example due to a regular data update.
+
+--
+
+**.lightgreen[2.]** Diagram layout and aesthetic design
+
+???
+
+Once the counting and annotation object is established, we can begin work on the second phase, diagram layout. We do this by creating a new data object that is ready to pass to CONSORT geoms in ggplot, which specifies layout and general aesthetics of the diagram.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data
+```
+
+```
+## # A tibble: 1,200 × 5
+##       id declined prior_chemo bone_mets treatment
+##    &lt;int&gt;    &lt;int&gt;       &lt;int&gt;     &lt;int&gt; &lt;chr&gt;    
+##  1 65464        0           0         0 Drug A   
+##  2 48228        0           0         0 Drug B   
+##  3 92586        0           0         0 Drug A   
+##  4 70176        0           0         0 Drug B   
+##  5 89052        0           0         0 Drug A   
+##  6 97333        0           0         0 Drug B   
+##  7 80724        0           0         0 Drug A   
+##  8 65186        0           0         0 Drug B   
+##  9 48837        0           0         0 Drug A   
+## 10 99005        0           0         0 Drug B   
+## # … with 1,190 more rows
+```
+
+???
+
+Let's work through an example. Here, you can see a simulated data frame which is included in the ggconsort package. trial_data contains information on 1200 patients who were eligible for a study. Some of these declined to participate (as denoted in the declined variable), or were ineligible due to two exclusion criteria (prior chemotherapy or bone metastasis). Eligible patients were randomized to receive Drug A or Drug B.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+* cohort_start("Assessed for eligibility")
+```
+
+```
+## A ggconsort cohort of 1200 observations with 0 cohorts.
+```
+
+???
+The fundamental building block of ggconsort is a new object of type ggconsort_cohort. We initialize one in a dplyr chain using the cohort_start verb, which also accepts a label that desribes the full cohort represented by the source data.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+  cohort_start("Assessed for eligibility") %&gt;% 
+* cohort_define(
+*   consented = .full %&gt;% filter(declined != 1)
+* )
+```
+
+```
+## A ggconsort cohort of 1200 observations with 1 cohort:
+##   - consented (1141)
+```
+
+???
+
+New cohorts are added to the ggconsort_cohort object using the cohort_define verb. The full data source object is always accessible as ".full", and we construct new subcohorts with standard dplyr. Here you see we've created the subcohort of 1141 consented participants.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+  cohort_start("Assessed for eligibility") %&gt;% 
+  cohort_define(
+    consented = .full %&gt;% filter(declined != 1),
+*   consented_chemonaive = consented %&gt;% filter(prior_chemo != 1)
+  )
+```
+
+```
+## A ggconsort cohort of 1200 observations with 2 cohorts:
+##   - consented (1141)
+##   - consented_chemonaive (1028)
+```
+
+???
+
+Further subcohorts can be defined using previously defined cohorts; here we identify the chemotherapy naive participants among those who were consented, using the consented cohort which was defined in the previous step.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+  cohort_start("Assessed for eligibility") %&gt;% 
+  cohort_define(
+    consented = .full %&gt;% filter(declined != 1),
+    consented_chemonaive = consented %&gt;% filter(prior_chemo != 1),
+*   randomized = consented_chemonaive %&gt;% filter(bone_mets != 1),
+*   treatment_a = randomized %&gt;% filter(treatment == "Drug A"),
+*   treatment_b = randomized %&gt;% filter(treatment == "Drug B")
+  )
+```
+
+```
+## A ggconsort cohort of 1200 observations with 5 cohorts:
+##   - consented (1141)
+##   - consented_chemonaive (1028)
+##   - randomized (938)
+##   - treatment_a (469)
+##   - treatment_b (469)
+```
+
+???
+
+And in this way, we can continue to build out all subcohorts which need to be represented in the CONSORT diagram. We've now added randomized patients (those who were consented, chemo naive, and did not have bone metastasis), and those who were assigned to Drug A or Drug B. 
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+  cohort_start("Assessed for eligibility") %&gt;% 
+  cohort_define(
+    consented = .full %&gt;% filter(declined != 1),
+    consented_chemonaive = consented %&gt;% filter(prior_chemo != 1),
+    randomized = consented_chemonaive %&gt;% filter(bone_mets != 1),
+    treatment_a = randomized %&gt;% filter(treatment == "Drug A"),
+    treatment_b = randomized %&gt;% filter(treatment == "Drug B"),
+    # anti_join is useful for counting exclusions -------------
+*   excluded = anti_join(.full, randomized, by = "id")
+  )
+```
+
+```
+## A ggconsort cohort of 1200 observations with 6 cohorts:
+##   - consented (1141)
+##   - consented_chemonaive (1028)
+##   - randomized (938)
+##   - treatment_a (469)
+##   - treatment_b (469)
+##   - excluded (262)
+```
+
+???
+
+Often in CONSORT diagrams, we need to count the difference between two cohorts for enumerating exclusions. anti_join is useful for this purpose. Here we use anti_join to identify the 262 excluded patients as the difference between the screened population of 1200 and the randomized population of 938.
+
+---
+## Counting and annotation 
+
+
+```r
+trial_data %&gt;%
+  cohort_start("Assessed for eligibility") %&gt;% 
+  cohort_define(
+    consented = .full %&gt;% filter(declined != 1),
+    consented_chemonaive = consented %&gt;% filter(prior_chemo != 1),
+    randomized = consented_chemonaive %&gt;% filter(bone_mets != 1),
+    treatment_a = randomized %&gt;% filter(treatment == "Drug A"),
+    treatment_b = randomized %&gt;% filter(treatment == "Drug B"),
+    # anti_join is useful for counting exclusions -------------
+    excluded = anti_join(.full, randomized, by = "id")
+  ) %&gt;%
+* cohort_label(
+*   consented = "Consented",
+*   consented_chemonaive = "Chemotherapy naive",
+*   randomized = "Randomized",
+*   treatment_a = "Allocated to arm A",
+*   treatment_b = "Allocated to arm B",
+*   excluded = "Excluded"
+* ) -&gt; study_cohorts
+```
+
+
+
+???
+
+Now, each of these cohorts should have a label for descriptive printing in the console or in the ultimate CONSORT diagram. We provide those labels with the consort_label verb. Finally, we store the ggconsort_cohort object into study_cohorts
+
+---
+## Counting and annotation 
+
+
+```r
+summary(study_cohorts)
+```
+
+```
+## # A tibble: 10 × 3
+##    cohort               count label                   
+##    &lt;chr&gt;                &lt;int&gt; &lt;chr&gt;                   
+##  1 .full                 1200 Assessed for eligibility
+##  2 consented             1141 Consented               
+##  3 consented_chemonaive  1028 Chemotherapy naive      
+##  4 randomized             938 Randomized              
+##  5 treatment_a            469 Allocated to arm A      
+##  6 treatment_b            469 Allocated to arm B      
+##  7 excluded               262 Excluded                
+##  8 excluded_declined       59 Declined to participate 
+##  9 excluded_chemo         113 Prior chemotherapy      
+## 10 excluded_mets           90 Bone metastasis
+```
+
+???
+
+ggconsort_cohort objects like study_cohorts have print and summary methods. Here is the summary of what we've built so far -- you can see I added a few more exclusion categories -- with their cohort name, count, and label.
+
+---
+## Diagram layout and aesthetics
+
+* `cohort_count_adorn()`: A convenience function for labels
+
+```r
+cohort_count_adorn(study_cohorts, randomized)
+```
+
+```
+## [1] "Randomized (n = 938)"
+```
+
+???
+
+We are now ready to move on to diagram layout, but before we do, I want to point out a convenience function for pasting or glueing cohort labels and their counts together into a single string (such as you would want in a CONSORT diagram box). cohort_count_adorn does this according to the default format shown. 
+
+--
+* Also accepts custom labeling functions
+
+```r
+cohort_count_adorn(
+  study_cohorts, 
+  .label_fn = function(cohort, label, count, ...) {
+    glue::glue("{count} {label}")
+  })
+```
+
+```
+##  [1] "1200 Assessed for eligibility" "1141 Consented"               
+##  [3] "1028 Chemotherapy naive"       "938 Randomized"               
+##  [5] "469 Allocated to arm A"        "469 Allocated to arm B"       
+##  [7] "262 Excluded"                  "59 Declined to participate"   
+##  [9] "113 Prior chemotherapy"        "90 Bone metastasis"
+```
+
+???
+
+If you want a custom format, that's possible too by way of the .label_fn argument. Here you can see an example of placing the number in front. 
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+* consort_box_add(
+*   name = "full", x = 0, y = 50, label = cohort_count_adorn(., .full)
+* )
+```
+
+&lt;img src="index_files/figure-html/layout-1-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+We can now add our first CONSORT box with the consort_box_add verb. This function needs a name for your box, an x and y location, and a label. Notice the use of cohort_count_adorn in the label argument. You can see our box below, looks like it worked!
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(
+    name = "full", x = 0, y = 50, label = cohort_count_adorn(., .full)
+  ) %&gt;%
+* consort_box_add(
+*   "randomized", 0, 30, cohort_count_adorn(., randomized)
+* )
+```
+
+&lt;img src="index_files/figure-html/layout-2-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+Let's add another box, this time for the randomized participant count. You can see that a lot of the heavy lifting has already been done by setting up the randomized cohort inside the ggconsort_cohort object, and then passing that subcohort to cohort_count_adorn.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(
+    name = "full", x = 0, y = 50, label = cohort_count_adorn(., .full)
+  ) %&gt;%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(., randomized)
+  ) %&gt;%
+* consort_box_add(
+*   "exclusions", 20, 40, glue::glue(
+*     '{cohort_count_adorn(study_cohorts, excluded)}&lt;br&gt;
+*     • {cohort_count_adorn(study_cohorts, excluded_declined)}&lt;br&gt;
+*     • {cohort_count_adorn(study_cohorts, excluded_chemo)}&lt;br&gt;
+*     • {cohort_count_adorn(study_cohorts, excluded_mets)}
+*     ')
+* )
+```
+
+???
+
+Here's a more complicated box enumerating all of the exclusions. It's really more of the same though: name the box (in this case "exclusions"), position it with x and y, then pass a string for its contents with the help of cohort_count_adorn.
+
+---
+## Diagram layout and aesthetics
+
+&lt;img src="index_files/figure-html/layout-4-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+Here's our new box.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(
+    name = "full", x = 0, y = 50, label = cohort_count_adorn(., .full)
+  ) %&gt;%
+  consort_box_add(
+    "randomized", 0, 30, cohort_count_adorn(., randomized)
+  ) %&gt;%
+  consort_box_add(
+    "exclusions", 20, 40, glue::glue(
+      '{cohort_count_adorn(study_cohorts, excluded)}&lt;br&gt;
+      • {cohort_count_adorn(study_cohorts, excluded_declined)}&lt;br&gt;
+      • {cohort_count_adorn(study_cohorts, excluded_chemo)}&lt;br&gt;
+      • {cohort_count_adorn(study_cohorts, excluded_mets)}
+      ')
+  ) %&gt;% 
+* consort_box_add(
+*   "arm_a", -30, 10, cohort_count_adorn(., treatment_a)
+* ) %&gt;%
+* consort_box_add(
+*   "arm_b", 30, 10, cohort_count_adorn(., treatment_b)
+* )
+```
+
+???
+
+Now we're really on a roll, and adding the boxes for the treatment arms is a piece of cake.
+
+---
+## Diagram layout and aesthetics
+
+&lt;img src="index_files/figure-html/layout-6-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+hooray! Let's add arrows.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(...) %&gt;%
+* consort_arrow_add(
+*   start = "full", start_side = "bottom",
+*   end = "randomized", end_side = "top"
+* )
+```
+
+&lt;img src="index_files/figure-html/layout-8-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+Arrows are placed with consort_arrow_add. When you want an arrow to connect one box to another, you simply pass the name of the starting box and the name of the ending box, along with which sides of those boxes you want the arrow to connect. Here, we are drawing an arrow from the bottom of the full box to the top of the randomized box.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(...) %&gt;%
+  consort_arrow_add(
+    start = "full", start_side = "bottom",
+    end = "randomized", end_side = "top"
+  ) %&gt;%
+* consort_arrow_add(
+*   end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+* )
+```
+
+&lt;img src="index_files/figure-html/layout-10-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+If an arrow doesn't start or end at a named box, you can specify start or end x/y coordinates instead of box names. Here, we start the exclusions arrow in the middle of the first arrow by passing start_x and start_y, and then tell it to end in the exclusions box. 
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(...) %&gt;%
+  consort_arrow_add(
+    start = "full", start_side = "bottom",
+    end = "randomized", end_side = "top"
+  ) %&gt;%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %&gt;%
+* consort_line_add(
+*   start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+* )
+```
+
+???
+
+Sometimes, we need lines without arrow ends. consort_line_add takes care of this, and accepts arguments in the same form as consort_arrow_add.
+
+---
+## Diagram layout and aesthetics
+
+&lt;img src="index_files/figure-html/layout-12-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+Here, you see we've added the horizontal line between the randomized box and the allocation boxes.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_cohorts %&gt;%
+  consort_box_add(...) %&gt;%
+  consort_arrow_add(
+    start = "full", start_side = "bottom",
+    end = "randomized", end_side = "top"
+  ) %&gt;%
+  consort_arrow_add(
+    end = "exclusions", end_side = "left", start_x = 0, start_y = 40
+  ) %&gt;%
+  consort_line_add(
+    start_x = -30, start_y = 20, end_x = 30, end_y = 20,
+  ) %&gt;%
+* consort_arrow_add(
+*   start_x = 0, start_y = 30, end_x = 0, end_y = 20,
+* ) %&gt;%
+* consort_arrow_add(
+*   end = "arm_a", end_side = "top", start_x = -30, start_y = 20
+* ) %&gt;%
+* consort_arrow_add(
+*   end = "arm_b", end_side = "top", start_x = 30, start_y = 20
+* ) -&gt; study_consort
+```
+
+???
+
+We only need 3 arrows to complete our CONSORT diagram, so we specify them with consort_arrow_add. Finally, let's store to an object called study_consort which will now have class ggconsort.
+
+---
+## Diagram layout and aesthetics
+
+
+
+
+```r
+study_consort %&gt;%
+  ggplot() + 
+  geom_consort() + 
+  theme_consort(margin_h = 8, margin_v = 1)
+```
+
+&lt;img src="index_files/figure-html/consort-1-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+ggconsort objects can be passed into ggplot and plotted with geom_consort. theme_consort is a useful helper that sets the theme to void and lets you extend horizontal and vertical margins -- this is often necessary because some text boxes can extend beyond the ggplot defaults. It takes a little iteration to get the canvas right, but thus far I haven't observed the process to be too painful.
+
+---
+## Diagram layout and aesthetics
+
+
+```r
+study_consort %&gt;%
+  ggplot() + 
+  geom_consort() + 
+* ggtext::geom_richtext(
+*   aes(x = 0, y = 10, label = "Allocation"),
+*   fill = "#9bc0fc"
+* ) +
+  theme_consort(margin_h = 8, margin_v = 1)
+```
+
+???
+
+Since we're now operating in ggplot, we can of course use other ggplot geoms. Here, I'm using geom_richtext from ggtext to add a blue text box labelled "Allocation" in between the two treatment arm boxes. 
+
+---
+## Diagram layout and aesthetics
+
+&lt;img src="index_files/figure-html/consort-3-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+???
+
+Like this.
+
+---
+## Proceed to analysis
+
+
+```r
+study_cohorts %&gt;% cohort_pull(randomized)
+```
+
+```
+## # A tibble: 938 × 5
+##       id declined prior_chemo bone_mets treatment
+##    &lt;int&gt;    &lt;int&gt;       &lt;int&gt;     &lt;int&gt; &lt;chr&gt;    
+##  1 65464        0           0         0 Drug A   
+##  2 48228        0           0         0 Drug B   
+##  3 92586        0           0         0 Drug A   
+##  4 70176        0           0         0 Drug B   
+##  5 89052        0           0         0 Drug A   
+##  6 97333        0           0         0 Drug B   
+##  7 80724        0           0         0 Drug A   
+##  8 65186        0           0         0 Drug B   
+##  9 48837        0           0         0 Drug A   
+## 10 99005        0           0         0 Drug B   
+## # … with 928 more rows
+```
+
+???
+
+A final ggconsort function I'll point out is called cohort_pull. You can use this when you need to extract the analytic data frame of randomized patients to begin work in lm, survival, or whatever your ultimate aim is. You can also use cohort_pull to troubleshoot or investigate excluded patients or other subcohorts.
+
+---
+### Thank you!
+
+* R/Med organizers and program committee (Peter Higgins in particular 🙂)
+
+* Co-author and all-around software development mentor: Garrick Aden-Buie
+
+* You! The package is under active development; feel free to submit issues / PR
+  * [tgerke.github.io/ggconsort/](https://tgerke.github.io/ggconsort/)
+
+.h-center.w-90[
+![](images/ggconsort-pkgdown.png)
+]
+
+???
+
+Thank you again to the R Medicine organizers and progamming committee, and once more Peter Higgins for kindly passing the ggconsort torch. A special thanks to my co-author on this package Garrick Aden-Buie, who provided critically important feedback and ideas about how this package should behave, and who I'm very lucky to have as a friend and software development mentor to me. Lastly, thanks to you all for listening and hopefully picking up the package and trying it out. As I mention here, it is under active development, and I'm still working to round out some of the documentation. I'll look forward to hearing feedback on your experience, reach out any time. Thanks!
+
+
+&lt;style type="text/css"&gt;
+.title-slide-custom {
+  position: relative;
+  z-index: 1;
+}
+.title-slide-custom h2 {
+  font-size: 3em;
+  position: absolute;
+  color: var(--offwhite);
+  bottom: 34%;
+  right: 20%;
+}
+.title-slide-custom h3 {
+  font-size: .75em;
+  text-align: right;
+  color: var(--green);
+  position: absolute;
+  bottom: 2%;
+  right: 2%;
+}
+.title-slide-custom::before {    
+      content: "";
+      background-image: url('images/tim-mossholder-zdV9ngtM0Sw-unsplash.jpg');
+      background-size: cover;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.7;
+      z-index: -1;
+}
+.title-slide-custom .remark-slide-number {
+  display: none;
+}
+.h2-subtitle {
+  color: var(--burgundy);
+  position: absolute;
+  top: 15%;
+}
+.purple-bg {
+  background-color: var(--purple);
+}
+.h-center {
+  margin: 0 auto;
+}
+.w-90 {
+  width: 90%;
+}
+.w-50 {
+  width: 50%;
+}
+.w-40 {
+  width: 40%;
+}
+.w-35 {
+  width: 35%;
+}
+.small-rule{
+  font-size: 1em;
+  font-weight: bold;
+  color: var(--green);
+}
+
+.highlight-last-item &gt; ul &gt; li, 
+.highlight-last-item &gt; ol &gt; li {
+  opacity: 0.5;
+  color: var(--purple);
+}
+.highlight-last-item &gt; ul &gt; li:last-of-type,
+.highlight-last-item &gt; ol &gt; li:last-of-type {
+  opacity: 1;
+  font-weight: bold;
+}
+
+.remark-visible .css-typing p {
+  opacity: 0;
+  border-right: .15em solid orange;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards
+}
+.remark-visible .css-typing p:nth-child(1) {
+  width: 100px;
+  -webkit-animation: type .5s steps(9,end);
+  animation: type .5s steps(9,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards
+}
+.remark-visible .css-typing p:nth-child(2) {
+  width: 550px;
+  -webkit-animation: type 2s steps(31,end);
+  animation: type 2s steps(31,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 1.5s;
+  animation-delay: 1.5s
+}
+.remark-visible .css-typing p:nth-child(3) {
+  width: 375px;
+  -webkit-animation: type 1s steps(20,end);
+  animation: type 1s steps(20,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 5s;
+  animation-delay: 5s
+}
+.remark-visible .css-typing p:nth-child(4) {
+  width: 60px;
+  -webkit-animation: type .5s steps(7,end);
+  animation: type .5s steps(7,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 7s;
+  animation-delay: 7s
+}
+
+.remark-visible .css-typing-2 p {
+  opacity: 0;
+  border-right: .15em solid orange;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards
+}
+.remark-visible .css-typing-2 p:nth-child(1) {
+  width: 100px;
+  -webkit-animation: type .5s steps(9,end);
+  animation: type .5s steps(9,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards
+}
+.remark-visible .css-typing-2 p:nth-child(2) {
+  width: 600px;
+  -webkit-animation: type 2s steps(31,end);
+  animation: type 2s steps(31,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 1.5s;
+  animation-delay: 1.5s
+}
+.remark-visible .css-typing-2 p:nth-child(3) {
+  width: 410px;
+  -webkit-animation: type 1s steps(20,end);
+  animation: type 1s steps(20,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 5s;
+  animation-delay: 5s
+}
+.remark-visible .css-typing-2 p:nth-child(4) {
+  width: 60px;
+  -webkit-animation: type .5s steps(7,end);
+  animation: type .5s steps(7,end);
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation-delay: 7s;
+  animation-delay: 7s
+}
+@keyframes type {
+  0% {
+    width: 0
+  }
+  1% {
+    opacity: 1
+  }
+  99.9% {
+    border-right: .15em solid orange
+  }
+  100% {
+    opacity: 1;
+    border: none
+  }
+}
+@-webkit-keyframes type {
+  0% {
+    width: 0
+  }
+  1% {
+    opacity: 1
+  }
+  99.9% {
+    border-right: .15em solid orange
+  }
+  100% {
+    opacity: 1;
+    border: none
+  }
+}
+@keyframes blink {
+  50% {
+    border-color: transparent
+  }
+}
+@-webkit-keyframes blink {
+  50% {
+    border-color: tranparent
+  }
+}
+&lt;/style&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
