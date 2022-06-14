@@ -36,6 +36,7 @@ xaringanExtra::use_extra_styles(
 library(dplyr)
 library(ggplot2)
 library(ggconsort)
+library(ggswimlane)
 
 # higlight code from
 # https://www.garrickadenbuie.com/blog/highlight-lines-without-breaking-the-code-in-xaringan/
@@ -828,12 +829,219 @@ class: inverse, middle, center
 
 <!-- image source https://www.jci.org/articles/view/138649/figure/4 -->
 
-.h-center.w-60[
+.h-center[
 ![](images/jci-swimlane.png)
 ]
 
+---
+### Swimlanes are often artisanal products
+
+* Many swimlanes are built from [templates](http://www.consort-statement.org/consort-statement/flow-diagram) in Word/Powerpoint/Illustrator
+
+* Some are built in [Excel](https://peltiertech.com/swimmer-plots-excel/) (less artisanal but can be painful)
+
+<!-- image source https://peltiertech.com/swimmer-plots-excel/ -->
+
+.h-center.w-65[
+![](images/excel-swimmer.png)
+]
+
+---
+## Typical data structure
+
+* Columns for ID, time on study, cohort, reason off study, and time/type of needed annotations
+
+```{r ds-data}
+glimpse(patient_disposition)
+```
+
+---
+## Basic ggswimlane use
+
+```{r swimlane-basic, fig.retina=3, fig.align='center', fig.height=5}
+patient_disposition %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort)
+```
+
+---
+## A swimlane theme
+
+```{r swimlane-theme, fig.retina=3, fig.align='center', fig.height=5}
+patient_disposition %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  theme_swimlane() #<<
+```
+
+---
+## Add trailing swimlane text
+
+```{r swimlane-text, fig.retina=3, fig.align='center', fig.height=5, eval=FALSE}
+patient_disposition %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) + #<<
+  theme_swimlane()
+```
 
 
+---
+## Add trailing swimlane text
+
+```{r swimlane-text-show, fig.retina=3, fig.align='center', fig.height=7, echo=FALSE}
+patient_disposition %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  theme_swimlane()
+```
+
+---
+## Add a swimlane rug
+
+```{r swimlane-rug, fig.retina=3, fig.align='center', fig.height=5, eval=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when( #<<
+      prior_drug == "Yes"~ "&#9658;", #<<
+      TRUE ~ NA_character_ #<<
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") + #<<
+  theme_swimlane()
+```
+
+---
+## Add a swimlane rug
+
+```{r swimlane-rug-show, fig.retina=3, fig.align='center', fig.height=7, echo=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when(
+      prior_drug == "Yes"~ "&#9658;",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") +
+  theme_swimlane()
+```
+
+---
+## Add point annotations
+
+```{r swimlane-point, fig.retina=3, fig.align='center', fig.height=5, eval=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when(
+      prior_drug == "Yes"~ "&#9658;",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") +
+  geom_point( #<<
+    aes(x = subject, y = partial_response), #<<
+    na.rm = TRUE #<<
+  ) + #<<
+  theme_swimlane()
+```
+
+---
+## Add point annotations
+
+```{r swimlane-point-show, fig.retina=3, fig.align='center', fig.height=7, echo=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when(
+      prior_drug == "Yes"~ "&#9658;",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") +
+  geom_point(
+    aes(x = subject, y = partial_response), 
+    na.rm = TRUE
+  ) + 
+  theme_swimlane()
+```
+
+---
+## Do your favorite ggplot things
+
+```{r ggplot-add, fig.retina=3, fig.align='center', fig.height=5, eval=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when(
+      prior_drug == "Yes"~ "&#9658;",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") +
+  geom_point(
+    aes(x = subject, y = partial_response),
+    na.rm = TRUE
+  ) +
+  ggsci::scale_fill_jco() + #<<
+  ggtitle("Time on study by subject") + #<<
+  ylab("Weeks on study") + #<<
+  theme_swimlane()
+```
+
+---
+## Do your favorite ggplot things
+
+```{r ggplot-add-show, fig.retina=3, fig.align='center', fig.height=7, echo=FALSE}
+patient_disposition %>%
+  mutate(
+    reason_off_study = tidyr::replace_na(reason_off_study, "&#8594;"),
+    prior_drug = dplyr::case_when(
+      prior_drug == "Yes"~ "&#9658;",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  order_swimlane(subject, weeks_on_study, cohort) %>%
+  ggplot() + 
+  geom_swimlane(subject, weeks_on_study, cohort) +
+  geom_swimlane_text(subject, weeks_on_study, reason_off_study) +
+  geom_swimlane_rug(x = subject, label_var = prior_drug, color = "#CD534C") +
+  geom_point(
+    aes(x = subject, y = partial_response), 
+    na.rm = TRUE
+  ) + 
+  ggsci::scale_fill_jco() +
+  ggtitle("Time on study by subject") +
+  ylab("Weeks on study") +
+  theme_swimlane()
+```
 
 ```{css, echo = FALSE}
 .title-slide-custom {
@@ -884,6 +1092,9 @@ class: inverse, middle, center
 .w-90 {
   width: 90%;
 }
+.w-65 {
+  width: 65%;
+}
 .w-50 {
   width: 50%;
 }
@@ -908,6 +1119,11 @@ class: inverse, middle, center
 .highlight-last-item > ol > li:last-of-type {
   opacity: 1;
   font-weight: bold;
+}
+
+.remark-code-small {
+  font-family: 'Source Code Pro', 'Lucida Console', Monaco, monospace;
+  font-size: 30%;
 }
 
 @keyframes type {
