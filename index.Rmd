@@ -1043,6 +1043,20 @@ patient_disposition %>%
   theme_swimlane()
 ```
 
+---
+## Thank you!!
+
+* Please contribute / provide feedback to either/both packages!
+  * [ggconsort](https://github.com/tgerke/ggconsort/)
+  * [ggswimlane](https://github.com/tgerke/ggswimlane/)
+  
+* Stay in touch
+  * https://twitter.com/travisgerke
+  * https://www.linkedin.com/in/travisgerke/
+  
+* Find these slides:
+  * https://tgerke.github.io/msk-useR-2022-06/
+
 ```{css, echo = FALSE}
 .title-slide-custom {
   position: relative;
