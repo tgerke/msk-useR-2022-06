@@ -797,11 +797,11 @@ study_cohorts %>% cohort_pull(randomized)
 A final ggconsort function I'll point out is called cohort_pull. You can use this when you need to extract the analytic data frame of randomized patients to begin work in lm, survival, or whatever your ultimate aim is. You can also use cohort_pull to troubleshoot or investigate excluded patients or other subcohorts.
 
 ---
-### Thank you!
+## Summary: ggconsort
 
-* Co-author and all-around software development mentor: Garrick Aden-Buie
+* Thanks to co-author and all-around software development mentor: Garrick Aden-Buie
 
-* You! The package is under active development; feel free to submit issues / PR
+* Thanks to you! The package is under active development; feel free to submit issues / PR
   * [tgerke.github.io/ggconsort/](https://tgerke.github.io/ggconsort/)
 
 .h-center.w-90[
@@ -811,6 +811,28 @@ A final ggconsort function I'll point out is called cohort_pull. You can use thi
 ???
 
 A special thanks to my co-author on this package Garrick Aden-Buie, who provided critically important feedback and ideas about how this package should behave, and who I'm very lucky to have as a friend and software development mentor to me. Lastly, thanks to you all for listening and hopefully picking up the package and trying it out. As I mention here, it is under active development, and I'm still working to round out some of the documentation. I'll look forward to hearing feedback on your experience, reach out any time. Thanks!
+
+---
+class: inverse, middle, center
+
+# ggswimlane
+
+---
+### What are swimlane/swimmer plots?
+.h2-subtitle[★ Image from Smith et al., JCI 2020]
+
+<br>
+* Swimlane plots show the clinical course of patients following study enrollment
+
+* Useful not only at trial conclusion, but also for study monitoring
+
+<!-- image source https://www.jci.org/articles/view/138649/figure/4 -->
+
+.h-center.w-60[
+![](images/jci-swimlane.png)
+]
+
+
 
 
 ```{css, echo = FALSE}
