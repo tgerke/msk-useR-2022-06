@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>MSK useR group</title>
+    <title>MSK useR group, June 2022</title>
     <meta charset="utf-8" />
     <meta name="author" content="Travis Gerke, ScD" />
     <script src="index_files/header-attrs-2.10.1/header-attrs.js"></script>
@@ -28,16 +28,12 @@ Photo by &lt;a href="https://unsplash.com/@timmossholder?utm_source=unsplash&amp
 
 ???
 
-Thanks to the amazing organizers of R/Medicine! I'm so happy to be back this year, all of the sessions so far have been incredible. I apologize that I did not prerecord this talk, which I'm giving live right now, so I won't be able to have fun interactions with you in the chat like some other speakers have done. I did leave a few minutes at the end, so I'm happy to field a couple of comments or questions at that time. I'm Travis Gerke, Director of Data Science at the Prostate Cancer Clinical Trials Consortium, where we manage about a quarter of all active early phase prostate cancer therapeutic trials in the US, with an increasing portfolio of international and late-phase studies as well. Our data science team is hiring, so feel free to reach out if you're looking. I'm here today to talk about CONSORT diagrams.
+Thanks to Dan and you all of the MSK useR group for having! I'm Travis Gerke, Director of Data Science at the Prostate Cancer Clinical Trials Consortium, where we manage about a quarter of all active early phase prostate cancer therapeutic trials in the US, with an increasing portfolio of international and late-phase studies as well. We are an incubating company of MSKCC, so we're technically also MSK employees, so I'm fortunate to call you all co-workers. I'm here today to talk about two ggplot-related packages that have been useful in our clinical trial work: one for producing CONSORT diagrams and another for producing swimmer's plots. As you'll see, ggconsort is a bit more involved and also further developed, whereas ggswimlane is pretty lightweight. Both would benefit tremendously from any feedback or improvements you'd like to contribute.
 
 ---
-### Flashback: R/Medicine 2020
+class: inverse, middle, center
 
-![](images/higgins-consort.png)
-
-???
-
-If you attended last year, you may remember Peter Higgins' excellent talk of the same ggconsort name. To avoid reinventing the wheel, I'm going to borrow two of his intro slides, and then provide some context for why I'm back to talk about this topic.
+# ggconsort
 
 ---
 ### What are CONSORT diagrams?
@@ -92,54 +88,6 @@ To date, CONSORTs are typically hand-crafted into templates provided at the CONS
 ???
 
 Some R implementations of CONSORT diagram construction do exist. Thus far, these are not ggplot-based. Some of you may be familiar with the excellent DiagrammeR package which, when carefully used, can achieve this goal: Danny Wong, Norbert Kohler, and Ben Gerber's pull request to Peter Higgin's ggconsort repository do use it. The challenge with DiagrammeR is that its output is actually too elegant for blocky CONSORTs. You can see an unanswered SO question below, showing DiagrammeRs aesthetically nicer rendering of a CONSORT using one of the approaches above; unfortunately the curved lines don't conform to CONSORT rules. In other attempts, my group implemented a latex/tikz version a few years back, and earlier this year I embedded the flowchart.js library into an R package called flowcharter, which was also didn't permit enough customization.
-
----
-### A fresh look / the goodness of the R community
-
-???
-
-So here we were, still lacking an end-to-end ggplot compatible CONSORT implementation. Having tinkered with this idea for years now, I had some building blocks in place, and what I was developing unfortunately did not extend Peter's package from last year. I didn't want to risk a ggconsort2 naming situation, so it was time for an email. (read email)
-
---
-
-.css-typing[
-Hi Peter,
-
-I'd like to take a pretty different approach to {ggconsort}.
-
-Are you willing to transfer the name? 
-
-Travis
-]
-
-???
-
-Peter, being the archetype of the generous and awesome R community responded.
-
----
-### A fresh look / the goodness of the R community
-
-Hi Peter,
-
-I'd like to take a pretty different approach to {ggconsort}.
-
-Are you willing to transfer the name? 
-
-Travis
-
-&lt;br&gt;
-&lt;hr&gt;
-&lt;br&gt;
-
-.css-typing-2[
-Hi Travis,
-
-Feel free to use the name, hex sticker, and anything else useful.
-
-https://github.com/higgi13425/ggconsort/
-
-Peter
-]
 
 ---
 class: middle
@@ -728,8 +676,6 @@ A final ggconsort function I'll point out is called cohort_pull. You can use thi
 ---
 ### Thank you!
 
-* R/Med organizers and program committee (Peter Higgins in particular 🙂)
-
 * Co-author and all-around software development mentor: Garrick Aden-Buie
 
 * You! The package is under active development; feel free to submit issues / PR
@@ -741,7 +687,7 @@ A final ggconsort function I'll point out is called cohort_pull. You can use thi
 
 ???
 
-Thank you again to the R Medicine organizers and progamming committee, and once more Peter Higgins for kindly passing the ggconsort torch. A special thanks to my co-author on this package Garrick Aden-Buie, who provided critically important feedback and ideas about how this package should behave, and who I'm very lucky to have as a friend and software development mentor to me. Lastly, thanks to you all for listening and hopefully picking up the package and trying it out. As I mention here, it is under active development, and I'm still working to round out some of the documentation. I'll look forward to hearing feedback on your experience, reach out any time. Thanks!
+A special thanks to my co-author on this package Garrick Aden-Buie, who provided critically important feedback and ideas about how this package should behave, and who I'm very lucky to have as a friend and software development mentor to me. Lastly, thanks to you all for listening and hopefully picking up the package and trying it out. As I mention here, it is under active development, and I'm still working to round out some of the documentation. I'll look forward to hearing feedback on your experience, reach out any time. Thanks!
 
 
 &lt;style type="text/css"&gt;
@@ -819,91 +765,6 @@ Thank you again to the R Medicine organizers and progamming committee, and once 
   font-weight: bold;
 }
 
-.remark-visible .css-typing p {
-  opacity: 0;
-  border-right: .15em solid orange;
-  white-space: nowrap;
-  overflow: hidden;
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards
-}
-.remark-visible .css-typing p:nth-child(1) {
-  width: 100px;
-  -webkit-animation: type .5s steps(9,end);
-  animation: type .5s steps(9,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards
-}
-.remark-visible .css-typing p:nth-child(2) {
-  width: 550px;
-  -webkit-animation: type 2s steps(31,end);
-  animation: type 2s steps(31,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 1.5s;
-  animation-delay: 1.5s
-}
-.remark-visible .css-typing p:nth-child(3) {
-  width: 375px;
-  -webkit-animation: type 1s steps(20,end);
-  animation: type 1s steps(20,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 5s;
-  animation-delay: 5s
-}
-.remark-visible .css-typing p:nth-child(4) {
-  width: 60px;
-  -webkit-animation: type .5s steps(7,end);
-  animation: type .5s steps(7,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 7s;
-  animation-delay: 7s
-}
-
-.remark-visible .css-typing-2 p {
-  opacity: 0;
-  border-right: .15em solid orange;
-  white-space: nowrap;
-  overflow: hidden;
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards
-}
-.remark-visible .css-typing-2 p:nth-child(1) {
-  width: 100px;
-  -webkit-animation: type .5s steps(9,end);
-  animation: type .5s steps(9,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards
-}
-.remark-visible .css-typing-2 p:nth-child(2) {
-  width: 600px;
-  -webkit-animation: type 2s steps(31,end);
-  animation: type 2s steps(31,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 1.5s;
-  animation-delay: 1.5s
-}
-.remark-visible .css-typing-2 p:nth-child(3) {
-  width: 410px;
-  -webkit-animation: type 1s steps(20,end);
-  animation: type 1s steps(20,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 5s;
-  animation-delay: 5s
-}
-.remark-visible .css-typing-2 p:nth-child(4) {
-  width: 60px;
-  -webkit-animation: type .5s steps(7,end);
-  animation: type .5s steps(7,end);
-  -webkit-animation-fill-mode: forwards;
-  animation-fill-mode: forwards;
-  -webkit-animation-delay: 7s;
-  animation-delay: 7s
-}
 @keyframes type {
   0% {
     width: 0
